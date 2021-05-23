@@ -4,5 +4,8 @@
       "runtime": "vercel-deno@0.7.12",
       "includeFiles": "api/**/*.{png,ttf}"
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/:address", "destination": "/api/hello" }
+  ]
 }
