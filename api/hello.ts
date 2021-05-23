@@ -5,6 +5,7 @@ const __filename = new URL(".", import.meta.url).pathname;
 const RESOURCE_ROOT = `${__filename}`;
 
 export default async (req: ServerRequest) => {
+  console.error(RESOURCE_ROOT)
   const binary = await Deno.readFile(`${RESOURCE_ROOT}/base.png`);
   const font = await Deno.readFile(`${RESOURCE_ROOT}/Roboto-Regular.ttf`);
   const image = await Image.decode(binary);
