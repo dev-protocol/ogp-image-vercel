@@ -14,7 +14,7 @@ const getPropertyInfo = async (propertyAddress: string) => {
     "variables": {
       "propertyAddress": "${propertyAddress}"
     },
-    "query": "query getPropertyAuthentication($propertyAddress: String!) { property_authentication(where: {property: {_eq: $propertyAddress}}) {  authentication_id    market    metrics    property_meta { author      __typename    }    __typename  }}"
+    "query": "query getPropertyAuthentication($propertyAddress: String!) { property_authentication(where: { property: {_eq: $propertyAddress} }) { authentication_id market property_meta { author __typename } __typename }}"
   }`;
   const res = await fetch(DEVPROTOCOL_GRAPHQL_URL, {
     method: "POST",
