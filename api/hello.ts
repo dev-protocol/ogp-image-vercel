@@ -1,8 +1,14 @@
 import { ServerRequest } from "https://deno.land/std@0.97.0/http/server.ts";
 import { Image } from "https://deno.land/x/imagescript@1.2.6/mod.ts";
+// TODO: remove this line, that released this commit:
+//       https://github.com/matmen/ImageScript/commit/62eebb315f07f59e76f5b5fb00a1e54fb42b8052
+import { TextLayout } from "https://github.com/hhatto/ImageScript/raw/deno-export-textlayout/mod.ts";
 
 const __filename = new URL(".", import.meta.url).pathname;
 const RESOURCE_ROOT = `${__filename}`;
+
+const MARKET_GITHUB = "0x34A7AdC94C4D41C3e3469F98033B372cB2fAf318";
+const MARKET_NPM = "0x88c7B1f41DdE50efFc25541a2E0769B887eB2ee7";
 
 const DEVPROTOCOL_GRAPHQL_URL = "https://api.devprotocol.xyz/v1/graphql";
 const DEVPROTOCOL_PROPERTY_URL = "https://api.devprotocol.xyz/v1/property";
@@ -23,9 +29,11 @@ const getPropertyInfo = async (propertyAddress: string) => {
   }).then(res => res.json());
   const propertyName = res?.data.property_authentication[0].authentication_id;
   const authorAddress = res?.data.property_authentication[0].property_meta.author;
+  const marketAddress = res?.data.property_authentication[0].market;
   return {
     propertyName,
     authorAddress,
+    marketAddress,
   }
 }
 
@@ -65,29 +73,42 @@ export default async (req: ServerRequest) => {
   const boldFont = await Deno.readFile(`${RESOURCE_ROOT}/Roboto-Bold.ttf`);
   const image = await Image.decode(binary);
 
-  // const { propertyName } = await getPropertyInfo(propertyAddress);
-  // const { name: authorName, karma } = await getAuthorInfo(propertyAddress);
   const res = await Promise.all([
     getPropertyInfo(propertyAddress),
     getAuthorInfo(propertyAddress),
     getPropertyDetail(propertyAddress),
   ]);
   const propertyName = res[0].propertyName;
+  const marketAddress = res[0].marketAddress;
   const authorName = res[1].name;
   const karma = res[1].karma;
   const description = res[2].description;
 
+  const market = marketAddress === MARKET_GITHUB ? 'GitHub' : marketAddress === MARKET_NPM ? 'npm' : 'Creators';
+
   // render text
   const propertyNameText = Image.renderText(boldFont, 60, propertyName, 0xffffffff);
   image.composite(propertyNameText, 65, 65);
-  const authorText = Image.renderText(font, 40, `Created by ${authorName}`, 0xffffffff);
+
+  const authorText = Image.renderText(font, 32, `created by ${authorName}`, 0xffffffff);
   image.composite(authorText, 65, 145);
-  const descriptionText = Image.renderText(font, 40, description, 0xffffffff);
-  image.composite(descriptionText, 65, 245);
-  const karmaText = Image.renderText(font, 40, "Karma", 0xffffffff);
+
+  // const textLayout2 = new TextLayout({ maxWidth: 900, maxHeight: 160, wrapStyle: 'word' });
+  const textLayout = { maxWidth: 900, maxHeight: 160, wrapStyle: 'word', verticalAlign: 'left', horizontalAlign: 'top', wrapHardBreaks: true };
+  const descriptionText = Image.renderText(font, 32, description, 0xffffffff, textLayout);
+  image.composite(descriptionText, 65, 225);
+
+  const karmaText = Image.renderText(font, 30, "karma", 0xffffffff);
   image.composite(karmaText, 65, 435);
+
   const karmaValueText = Image.renderText(boldFont, 50, `${karma}`, 0xffffffff);
   image.composite(karmaValueText, 65, 475);
+
+  const marketText = Image.renderText(font, 30, "market", 0xffffffff);
+  image.composite(marketText, 325, 435);
+
+  const marketValueText = Image.renderText(boldFont, 50, `${market}`, 0xffffffff);
+  image.composite(marketValueText, 325, 475);
 
   const encoded = await image.encode(1);
 
