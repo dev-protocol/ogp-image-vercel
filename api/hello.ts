@@ -26,44 +26,48 @@ const getPropertyInfo = async (propertyAddress: string) => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: body,
-  }).then(res => res.json());
+  }).then((res) => res.json());
   const propertyName = res?.data.property_authentication[0].authentication_id;
-  const authorAddress = res?.data.property_authentication[0].property_meta.author;
+  const authorAddress =
+    res?.data.property_authentication[0].property_meta.author;
   const marketAddress = res?.data.property_authentication[0].market;
   return {
     propertyName,
     authorAddress,
     marketAddress,
-  }
-}
+  };
+};
 
 const getAuthorInfo = async (propertyAddress: string) => {
   const url = `${DEVPROTOCOL_PROPERTY_URL}/${propertyAddress}`;
-  const res = await fetch(url).then(res => res.json());
+  const res = await fetch(url).then((res) => res.json());
   const name = res.name;
   const karma = res.author.karma;
   return {
     name,
     karma,
-  }
-}
+  };
+};
 
 const getPropertyDetail = async (propertyAddress: string) => {
-  const url = `${DEVPROTOCOL_FOR_APPS_URL}/properties?address=${propertyAddress}`;
-  const res = await fetch(url).then(res => res.json());
-  const description = res[0].description
-  return { description }
-}
+  const url =
+    `${DEVPROTOCOL_FOR_APPS_URL}/properties?address=${propertyAddress}`;
+  const res = await fetch(url).then((res) => res.json());
+  const description = res[0].description;
+  return { description };
+};
 
 export default async (req: ServerRequest) => {
-  const base = `${req.headers.get('x-forwarded-proto')}://${req.headers.get('x-forwarded-host')}`;
+  const base = `${req.headers.get("x-forwarded-proto")}://${
+    req.headers.get("x-forwarded-host")
+  }`;
   const url = new URL(req.url, base);
 
-  const propertyAddress = url.searchParams.get('address');
+  const propertyAddress = url.searchParams.get("address");
   if (!propertyAddress?.startsWith("0x") || !propertyAddress) {
     req.respond({
       status: 400,
-    })
+    });
     return;
   }
   console.debug(req.url, url, propertyAddress);
@@ -84,18 +88,45 @@ export default async (req: ServerRequest) => {
   const karma = res[1].karma;
   const description = res[2].description;
 
-  const market = marketAddress === MARKET_GITHUB ? 'GitHub' : marketAddress === MARKET_NPM ? 'npm' : 'Creators';
+  const market = marketAddress === MARKET_GITHUB
+    ? "GitHub"
+    : marketAddress === MARKET_NPM
+    ? "npm"
+    : "Creators";
 
   // render text
-  const propertyNameText = Image.renderText(boldFont, 60, propertyName, 0xffffffff);
+  const propertyNameText = Image.renderText(
+    boldFont,
+    60,
+    propertyName,
+    0xffffffff,
+  );
   image.composite(propertyNameText, 65, 65);
 
-  const authorText = Image.renderText(font, 32, `created by ${authorName}`, 0xffffffff);
+  const authorText = Image.renderText(
+    font,
+    32,
+    `created by ${authorName}`,
+    0xffffffff,
+  );
   image.composite(authorText, 65, 145);
 
   // const textLayout2 = new TextLayout({ maxWidth: 900, maxHeight: 160, wrapStyle: 'word' });
-  const textLayout = { maxWidth: 900, maxHeight: 160, wrapStyle: 'word', verticalAlign: 'left', horizontalAlign: 'top', wrapHardBreaks: true };
-  const descriptionText = Image.renderText(font, 32, description, 0xffffffff, textLayout);
+  const textLayout = {
+    maxWidth: 900,
+    maxHeight: 160,
+    wrapStyle: "word",
+    verticalAlign: "left",
+    horizontalAlign: "top",
+    wrapHardBreaks: true,
+  };
+  const descriptionText = Image.renderText(
+    font,
+    32,
+    description,
+    0xffffffff,
+    textLayout,
+  );
   image.composite(descriptionText, 65, 225);
 
   const karmaText = Image.renderText(font, 30, "karma", 0xffffffff);
@@ -107,13 +138,18 @@ export default async (req: ServerRequest) => {
   const marketText = Image.renderText(font, 30, "market", 0xffffffff);
   image.composite(marketText, 325, 435);
 
-  const marketValueText = Image.renderText(boldFont, 50, `${market}`, 0xffffffff);
+  const marketValueText = Image.renderText(
+    boldFont,
+    50,
+    `${market}`,
+    0xffffffff,
+  );
   image.composite(marketValueText, 325, 475);
 
   const encoded = await image.encode(1);
 
   const headers = new Headers();
-  headers.set('Content-Type', 'image/png');
+  headers.set("Content-Type", "image/png");
 
   req.respond({
     status: 200,
