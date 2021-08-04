@@ -59,7 +59,9 @@ const getPropertyDetail = async (propertyAddress: string) => {
 
 export default async (req: ServerRequest) => {
   const base = `${req.headers.get("x-forwarded-proto")}://${
-    req.headers.get("x-forwarded-host")
+    req.headers.get(
+      "x-forwarded-host",
+    )
   }`;
   const url = new URL(req.url, base);
 
