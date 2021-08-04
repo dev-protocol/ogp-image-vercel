@@ -53,7 +53,7 @@ const getPropertyDetail = async (propertyAddress: string) => {
   const url =
     `${DEVPROTOCOL_FOR_APPS_URL}/properties?address=${propertyAddress}`;
   const res = await fetch(url).then((res) => res.json());
-  const description = res[0].description ||
+  const description = res[0]?.description ||
     "Stake DEV tokens to provide funding for OSS projects so that they can maintain development.";
   return { description };
 };
