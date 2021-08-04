@@ -2,7 +2,7 @@
   "public": true,
   "functions": {
     "api/**/*.[jt]s": {
-      "runtime": "vercel-deno@0.7.12",
+      "runtime": "vercel-deno@0.7.13",
       "includeFiles": "api/**/*.{png,ttf}"
     }
   },
